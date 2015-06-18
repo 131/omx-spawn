@@ -1,0 +1,26 @@
+{
+  "name": "omx-spawn",
+  "version": "0.0.1",
+  "description": "Omxplayer control helper, with continuous playlist support",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:131/omx-spawn.git"
+  },
+  "keywords": [
+    "omxplayer",
+    "playlist"
+  ],
+  "author": "Francois Leurent <131.js@cloudyks.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/131/omx-spawn/issues"
+  },
+  "homepage": "https://github.com/131/omx-spawn",
+  "dependencies": {
+    "uclass": "^1.0.1"
+  }
+}
