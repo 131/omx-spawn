@@ -14,25 +14,22 @@ var player = new Omx();
 
 player.play(playlist , {loop:true});
 
-
 setTimeout(function(){
-player.playonce('/var/cache/activscreen/media/4e/a381/4ea381b59889940b18cf0b966b144c39')}, 5000)
+player.playonce('/var/cache/activscreen/media/3a/ea86/3aea86ce941f5bb1ecb1868b82990bfc')}, 5000)
 
 
+
+//---------------------//
 /*
-  //add item to playlist
-player.queue(playlist[1], function(){
-  player.next();
-});
-
-setTimeout(function(){
-    //play this video 
-  var oldIndex =  player.currrentPlaylistIndex;
-  player.play(playlist[1], function(){
-    player.play(nextPlaylist, {loop : true, startIndex : oldIndex} );
-  });
-}, 1000);
-
-
-setTimeout(player.stop, 10 * 1000);
+player.playonce('/var/cache/activscreen/media/3a/ea86/3aea86ce941f5bb1ecb1868b82990bfc') ;
+player.playonce('/var/cache/activscreen/media/3a/ea86/3aea86ce941f5bb1ecb1868b82990bfc') ;
+player.playonce('/var/cache/activscreen/media/d6/d933/d6d9331638602d5c6ff674e4900975c8') ;
 */
+/*
+player.playonce('/var/cache/activscreen/media/3a/ea86/3aea86ce941f5bb1ecb1868b82990bfc') ;
+player.playonce('/var/cache/activscreen/media/d6/d933/d6d9331638602d5c6ff674e4900975c8') ;
+player.play(playlist , {loop:true});
+player.playonce('/var/cache/activscreen/media/3a/ea86/3aea86ce941f5bb1ecb1868b82990bfc') ;
+player.playonce('/var/cache/activscreen/media/d6/d933/d6d9331638602d5c6ff674e4900975c8') ;
+*/
+//---------------------//
