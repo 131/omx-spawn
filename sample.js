@@ -14,10 +14,12 @@ var player = new Omx();
 
 player.play(playlist , {loop:true});
 
+
+/*
 setTimeout(function(){
 player.playonce('/var/cache/activscreen/media/3a/ea86/3aea86ce941f5bb1ecb1868b82990bfc')}, 5000)
 
-
+*/
 
 //---------------------//
 /*
