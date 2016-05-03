@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/131/omx-spawn",
   "dependencies": {
-    "uclass": "^2.0.5"
+    "uclass": "^2.1.0"
   }
 }
