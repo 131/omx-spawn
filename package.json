@@ -6,21 +6,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:131/omx-spawn.git"
-  },
   "keywords": [
     "omxplayer",
     "playlist"
   ],
   "author": "Francois Leurent <131.js@cloudyks.org>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/131/omx-spawn/issues"
-  },
-  "homepage": "https://github.com/131/omx-spawn",
   "dependencies": {
     "uclass": "^2.1.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivsgroup/omx-spawn.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ivsgroup/omx-spawn/issues"
+  },
+  "homepage": "https://github.com/ivsgroup/omx-spawn#readme"
 }
