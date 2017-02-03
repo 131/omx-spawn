@@ -13,7 +13,7 @@
   "author": "Francois Leurent <131.js@cloudyks.org>",
   "license": "MIT",
   "dependencies": {
-    "uclass": "^2.1.0"
+    "debug": "^2.6.0"
   },
   "devDependencies": {},
   "repository": {
