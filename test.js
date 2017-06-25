@@ -14,12 +14,12 @@ function mockplayer() {
 
   var start = Date.now(), playing, took;
   player.history = [];
-  player.on('play', function(file_path) {
+  player.on('play', function(media) {
     took = Date.now() - start; 
     start = Date.now();
     if(playing)
-      player.history.push({playing, took});
-    playing = file_path;
+      player.history.push({file_path : playing.file_path, guid:playing.guid, took});
+    playing = media;
   });
 
   return player;
@@ -45,12 +45,26 @@ class foo {
   * run2() {
     var player = mockplayer();
 
-    player.play(["2000"]);
-    yield sleep(1100); yield player.next(); 
-    yield sleep(200); yield player.next();
-    yield sleep(300); yield player.next();
-    yield sleep(400); yield player.next();
+    yield player.play(["2000"]);
+    yield player.next();
+    yield sleep(4 * 1000);
+
+    yield player.destroy();
+    console.log(player.history)
+  }
+
+
+  * runonce() {
+    var player = mockplayer();
+
+    yield player.play(["2000"]);
     yield sleep(1000);
+    yield player.playonce("3000");
+
+    yield sleep(1000);
+    yield player.next();
+
+    yield sleep(4 * 1000);
 
     yield player.destroy();
     console.log(player.history)

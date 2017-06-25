@@ -6,6 +6,7 @@ const guid  = require('mout/random/guid');
 const cp    = require('child_process');
 const debug    = require('debug')('omx-spawn');
 
+const NEXT_EVENT = guid(); //private
 class omxspawn extends Event {
 
   constructor() {
@@ -29,21 +30,30 @@ class omxspawn extends Event {
 
     var next = {ready : defer() };
     var front = yield this._load(this._shift());
-
-    this.on('next', function(){
-      console.log("NEXTING STUFF");
-      next.ready.reject();
+    var self  = this, skipped = false;
+    
+    this.on(NEXT_EVENT, function() {
+      console.log("Skipping to ", next.guid);
+      next.ready.resolve("GOTNEXT"); //this might be an old reference
+      skipped = true;
     })
-    do {
-      front.begin();
-      this.emit('play' , front.file_path);
 
+    front.begin();
+    this.emit('play' , front);
+
+    do {
       try {
         next = yield this._load(this._shift(), true);
-        setTimeout(next.ready.resolve, front.duration - (Date.now() - front.startTiming));
-        yield next.ready;
+        if(skipped)
+          next.ready.resolve("2NSKIP");
+        var delay = front.duration - (Date.now() - front.startTiming);
+        console.log("Waiting %s for %s (%s after %s startup time)", next.guid, delay, front.duration, front.guid);
+        setTimeout(next.ready.resolve, delay, "TIEMOUT");
+        var why = yield next.ready;
+        skipped = false;
+        console.log("Now ready", next.guid, why);
       } catch(err) {
-        console.log("CATCHING STUFF");
+        console.log("CATCHING STUFF", next.guid);
         next.destroy();
         if(this.running)
           continue;
@@ -51,7 +61,11 @@ class omxspawn extends Event {
 
       setTimeout(front.destroy.bind(front), 1000);
       front = next;
+
+      front.begin();
+      this.emit('play' , front);
     } while(this.running);
+    console.log("ALL DONE");
   }
 
   _shift() {
@@ -60,7 +74,10 @@ class omxspawn extends Event {
   }
 
   next() {
-    return this.emit('next').catch(console.log);
+    var defered = defer();
+    this.once('play', defered.resolve);
+    this.emit(NEXT_EVENT).catch(console.log);
+    return defered;
   }
 
   play(playlist) {
@@ -69,8 +86,11 @@ class omxspawn extends Event {
       playlist = [playlist];
     this.playlist = playlist;
 
-    this.emit('next').catch(console.log);
-    this.emit('start').catch(console.log); //first will start all
+    this.emit('start').catch(console.log);
+
+    var defered = defer();
+    this.once('play', defered.resolve);
+    return defered;
   }
 
 
