@@ -12,13 +12,12 @@ function mockplayer() {
     return cp.spawn('node', [ path.resolve(__dirname, 'test', 'mock') , file_path] )
   }
 
-  var start = Date.now(), playing, took;
+  var playing;
   player.history = [];
   player.on('play', function(media) {
-    took = Date.now() - start; 
-    start = Date.now();
     if(playing)
-      player.history.push({file_path : playing.file_path, guid:playing.guid, took});
+      player.history.push({file_path : playing.file_path, guid:playing.guid, duration:media.startTiming - playing.startTiming});
+
     playing = media;
   });
 
@@ -36,7 +35,7 @@ class foo {
   * run() {
     var player = mockplayer();
     player.play(["2000", "1000"]);
-      yield sleep(8 * 1000);
+      yield sleep(6 * 1000);
 
     yield player.destroy();
     console.log(player.history)
@@ -46,7 +45,11 @@ class foo {
     var player = mockplayer();
 
     yield player.play(["2000"]);
-    yield player.next();
+
+    yield sleep(1000); yield player.next();
+    yield sleep(1500); yield  player.next();
+    yield sleep(500); yield  player.next();
+
     yield sleep(4 * 1000);
 
     yield player.destroy();
@@ -58,14 +61,14 @@ class foo {
     var player = mockplayer();
 
     yield player.play(["2000"]);
-    yield sleep(1000);
-    yield player.playonce("3000");
-
-    yield sleep(1000);
     yield player.next();
+    yield sleep(1500);
 
-    yield sleep(4 * 1000);
+    player.playonce("3000");
+    yield sleep(800);
+    player.playonce("3000");
 
+    yield sleep(5 * 1000);
     yield player.destroy();
     console.log(player.history)
   }

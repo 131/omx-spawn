@@ -6,69 +6,101 @@ const guid  = require('mout/random/guid');
 const cp    = require('child_process');
 const debug    = require('debug')('omx-spawn');
 
-const NEXT_EVENT = guid(); //private
+const NEXT_EVENT       = guid(); //private
+const START_LOOP_EVENT = guid(); //private
+
 class omxspawn extends Event {
 
   constructor() {
+
+
     super();
 
     this.layer = 2147483643;
     this.playlist = [];
+    this.forced   = [];
     this.playlistIndex = 0;
-    this.once('start', this._run, this);
+    this.once(START_LOOP_EVENT, this._run, this);
   }
 
-  destroy() {
-    this.running = false;
-    return this.next();
-  }
 
   * _run() {
     if(this.running)  
       return;
     this.running  = true;
 
-    var next = {ready : defer() };
+
     var front = yield this._load(this._shift());
-    var self  = this, skipped = false;
-    
-    this.on(NEXT_EVENT, function() {
-      console.log("Skipping to ", next.guid);
-      next.ready.resolve("GOTNEXT"); //this might be an old reference
-      skipped = true;
-    })
+    var next = {ready : defer() };
 
     front.begin();
+
+    var shouldJump = null;
+    this.on(NEXT_EVENT, function(reject) {
+       next.ready[reject]();
+       shouldJump = reject;
+    });
+
     this.emit('play' , front);
 
+    var paused = true;
+
     do {
+      console.log("Should pause is", paused);
+      next = yield this._load(this._shift(), paused);
+
+      var delay = front.duration - (Date.now() - front.startTiming);
+      if(!paused)
+        delay = 0;
+        
+      setTimeout(next.ready.resolve, delay);
+
       try {
-        next = yield this._load(this._shift(), true);
-        if(skipped)
-          next.ready.resolve("2NSKIP");
-        var delay = front.duration - (Date.now() - front.startTiming);
-        console.log("Waiting %s for %s (%s after %s startup time)", next.guid, delay, front.duration, front.guid);
-        setTimeout(next.ready.resolve, delay, "TIEMOUT");
-        var why = yield next.ready;
-        skipped = false;
-        console.log("Now ready", next.guid, why);
+        if(shouldJump)
+          next.ready[shouldJump]();
+        yield next.ready;
       } catch(err) {
-        console.log("CATCHING STUFF", next.guid);
+        paused = false;
         next.destroy();
-        if(this.running)
-          continue;
+        continue;
+      } finally {
+        shouldJump = null;
       }
 
-      setTimeout(front.destroy.bind(front), 1000);
-      front = next;
+      paused = true;
+      setTimeout(front.destroy, 1000);
 
+      front = next;
       front.begin();
       this.emit('play' , front);
+
+
     } while(this.running);
-    console.log("ALL DONE");
+
   }
 
+
+
+  destroy() {
+    this.running = false;
+    return this.next();
+  }
+
+
+
+  playonce(file) {
+    this.forced = [file];
+    var defered = defer();
+    this.once('play', defered.resolve);
+    this.emit(NEXT_EVENT, "reject").catch(console.log);
+    return defered;
+  }
+
+
   _shift() {
+    if(this.forced.length)
+      return this.forced.shift();
+
     var entry = this.playlist[this.playlistIndex++ % this.playlist.length];
     return entry;
   }
@@ -76,23 +108,22 @@ class omxspawn extends Event {
   next() {
     var defered = defer();
     this.once('play', defered.resolve);
-    this.emit(NEXT_EVENT).catch(console.log);
+    this.emit(NEXT_EVENT, "resolve").catch(console.log);
     return defered;
   }
 
   play(playlist) {
-
+    this.forced = [];
     if(typeof playlist == "string")
       playlist = [playlist];
     this.playlist = playlist;
 
-    this.emit('start').catch(console.log);
+    this.emit(START_LOOP_EVENT).catch(console.log);
 
     var defered = defer();
     this.once('play', defered.resolve);
     return defered;
   }
-
 
 
   _spawn(file_path) {
@@ -110,14 +141,15 @@ class omxspawn extends Event {
     var child = this._spawn(file_path);
 
     var media = {
-      guid : guid(),
+      guid : guid().substr(0,6),
       pause : false,
       startTiming : null,
       file_path,
       ready : defer(),
       duration  :  0,
       begin : function() {
-        this.running = true;
+        if(this.pause)
+          this.togglePause();
         this.startTiming = Date.now();
       },
 
