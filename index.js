@@ -1,45 +1,42 @@
 "use strict";
 
 const Event = require('eventemitter-co');
+const cp    = require('child_process');
+
 const defer = require('nyks/promise/defer');
 const guid  = require('mout/random/guid');
-const cp    = require('child_process');
-const debug    = require('debug')('omx-spawn');
+
+const debug = require('debug')('omx-spawn');
 
 const NEXT_EVENT       = guid(); //private
-const START_LOOP_EVENT = guid(); //private
-const END_LOOP_EVENT = guid(); //private
+const EVENT_LOOP_START = guid(); //private
+const EVENT_LOOP_END   = guid(); //private
 
 class omxspawn extends Event {
 
   constructor() {
-
-
     super();
 
     this.layer = 2147483643;
     this.playlist = [];
     this.forced   = [];
     this.playlistIndex = 0;
-    this.once(START_LOOP_EVENT, this._run, this);
+    this.once(EVENT_LOOP_START, this._run, this);
   }
-
 
   * _run() {
     if(this.running)  
       return;
     this.running  = true;
 
-
     var front = yield this._load(this._shift());
-    var next = {ready : defer() };
+    var next = {ready : defer()};
 
     var shouldkill = false;
     var shouldJump = null;
-    this.on(NEXT_EVENT, function(reject, shouldIkillfront) {
-       console.log()
+    this.on(NEXT_EVENT, function(reject, killfront) {
        next.ready[reject]("playonce");
-       shouldkill = !!shouldIkillfront;
+       shouldkill = !!killfront;
        shouldJump = reject;
     });
 
@@ -47,7 +44,6 @@ class omxspawn extends Event {
     do {
       front.begin();
 
-      console.log("Should pause is", paused);
       next = yield this._load(this._shift(), paused);
 
       var delay = front.duration - (Date.now() - front.startTiming);
@@ -75,33 +71,28 @@ class omxspawn extends Event {
 
       paused = true;
       setTimeout(front.destroy, 1000);
-
       front = next;
-
     } while(this.running);
 
-    this.emit(END_LOOP_EVENT);
+    this.emit(EVENT_LOOP_END);
 
     front.destroy();
     next.destroy();
   }
 
 
-
   destroy() {
     this.running = false;
     var defered = defer();
-    this.on(END_LOOP_EVENT, defered.resolve);
+    this.on(EVENT_LOOP_END, defered.resolve);
     return defered;
   }
-
-
 
   playonce(file, shouldkill) {
     this.forced = [file];
     var defered = defer();
     this.once('play', defered.resolve);
-    this.emit(NEXT_EVENT, "reject", shouldkill).catch(console.log);
+    this.emit(NEXT_EVENT, "reject", shouldkill).catch(debug);
     return defered;
   }
 
@@ -119,7 +110,7 @@ class omxspawn extends Event {
   next() {
     var defered = defer();
     this.once('play', defered.resolve);
-    this.emit(NEXT_EVENT, "resolve").catch(console.log);
+    this.emit(NEXT_EVENT, "resolve").catch(debug);
     return defered;
   }
 
@@ -127,21 +118,20 @@ class omxspawn extends Event {
     this.forced = [];
     if(typeof playlist == "string")
       playlist = [playlist];
+
     this.playlist = playlist;
 
-
-    if(this.running){
+    if(this.running) {
       this.playlistIndex = 0
-      this.emit(NEXT_EVENT, "reject", shouldkill).catch(console.log);
+      this.emit(NEXT_EVENT, "reject", shouldkill).catch(debug);
     } else {
-      this.emit(START_LOOP_EVENT).catch(console.log);
+      this.emit(EVENT_LOOP_START).catch(debug);
     }
 
     var defered = defer();
     this.once('play', defered.resolve);
     return defered;
   }
-
 
   _spawn(file_path) {
     var args = ["--no-osd", "-I", "--layer=" + (this.layer--),  file_path];
@@ -167,11 +157,11 @@ class omxspawn extends Event {
       begin : function() {
         if(this.startTiming)
           return;
-        console.log("BEGINING", this.file_path, this.guid);
         if(this.pause)
           this.togglePause();
         this.startTiming = Date.now();
-        self.emit('play' , this);
+        self.emit('track' , this);
+        self.emit('play' , this.file_path);
       },
 
       destroy : function() {
@@ -184,7 +174,7 @@ class omxspawn extends Event {
       }
     };
 
-    console.log("Loading file ", media.file_path, media.guid);
+    debug("Loading file", media.file_path, media.guid);
 
     var defered = defer();
 

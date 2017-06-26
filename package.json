@@ -15,23 +15,23 @@
   "author": "Francois Leurent <131.js@cloudyks.org>",
   "license": "MIT",
   "dependencies": {
-    "debug": "^2.6.0",
+    "debug": "^2.3.2",
     "eventemitter-co": "^1.0.4",
     "mout": "^1.0.0",
     "nyks": "^3.19.0"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
-    "istanbul": "~0.3.18",
-    "mocha": "^2.2.5",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.1.2",
     "mocha-plugin-co": "^1.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ivsgroup/omx-spawn.git"
+    "url": "git+https://github.com/131/omx-spawn.git"
   },
   "bugs": {
-    "url": "https://github.com/ivsgroup/omx-spawn/issues"
+    "url": "https://github.com/131/omx-spawn/issues"
   },
-  "homepage": "https://github.com/ivsgroup/omx-spawn#readme"
+  "homepage": "https://github.com/131/omx-spawn#readme"
 }
