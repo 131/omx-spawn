@@ -8,6 +8,7 @@ const debug    = require('debug')('omx-spawn');
 
 const NEXT_EVENT       = guid(); //private
 const START_LOOP_EVENT = guid(); //private
+const END_LOOP_EVENT = guid(); //private
 
 class omxspawn extends Event {
 
@@ -33,19 +34,17 @@ class omxspawn extends Event {
     var front = yield this._load(this._shift());
     var next = {ready : defer() };
 
-    front.begin();
 
     var shouldJump = null;
     this.on(NEXT_EVENT, function(reject) {
-       next.ready[reject]();
+       next.ready[reject]("playonce");
        shouldJump = reject;
     });
 
-    this.emit('play' , front);
-
     var paused = true;
-
     do {
+      front.begin();
+
       console.log("Should pause is", paused);
       next = yield this._load(this._shift(), paused);
 
@@ -57,10 +56,11 @@ class omxspawn extends Event {
 
       try {
         if(shouldJump)
-          next.ready[shouldJump]();
+          next.ready[shouldJump]("playonce");
         yield next.ready;
       } catch(err) {
-        paused = false;
+        if(err == "playonce")
+          paused = false;
         next.destroy();
         continue;
       } finally {
@@ -71,19 +71,22 @@ class omxspawn extends Event {
       setTimeout(front.destroy, 1000);
 
       front = next;
-      front.begin();
-      this.emit('play' , front);
-
 
     } while(this.running);
 
+    this.emit(END_LOOP_EVENT);
+
+    front.destroy();
+    next.destroy();
   }
 
 
 
   destroy() {
     this.running = false;
-    return this.next();
+    var defered = defer();
+    this.on(END_LOOP_EVENT, defered.resolve);
+    return defered;
   }
 
 
@@ -137,7 +140,7 @@ class omxspawn extends Event {
   }
 
   _load(file_path, paused) {
-
+    var self = this;
     var child = this._spawn(file_path);
 
     var media = {
@@ -148,9 +151,13 @@ class omxspawn extends Event {
       ready : defer(),
       duration  :  0,
       begin : function() {
+        if(this.startTiming)
+          return;
+        console.log("BEGINING", this.file_path, this.guid);
         if(this.pause)
           this.togglePause();
         this.startTiming = Date.now();
+        self.emit('play' , this);
       },
 
       destroy : function() {
