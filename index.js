@@ -34,10 +34,12 @@ class omxspawn extends Event {
     var front = yield this._load(this._shift());
     var next = {ready : defer() };
 
-
+    var shouldkill = false;
     var shouldJump = null;
-    this.on(NEXT_EVENT, function(reject) {
+    this.on(NEXT_EVENT, function(reject, shouldIkillfront) {
+       console.log()
        next.ready[reject]("playonce");
+       shouldkill = !!shouldIkillfront;
        shouldJump = reject;
     });
 
@@ -59,8 +61,12 @@ class omxspawn extends Event {
           next.ready[shouldJump]("playonce");
         yield next.ready;
       } catch(err) {
-        if(err == "playonce")
-          paused = false;
+        if(err == "playonce") {
+          if(shouldkill)
+            front.destroy();
+          shouldkill = false;
+          paused     = false;
+        }
         next.destroy();
         continue;
       } finally {
@@ -91,14 +97,16 @@ class omxspawn extends Event {
 
 
 
-  playonce(file) {
+  playonce(file, shouldkill) {
     this.forced = [file];
     var defered = defer();
     this.once('play', defered.resolve);
-    this.emit(NEXT_EVENT, "reject").catch(console.log);
+    this.emit(NEXT_EVENT, "reject", shouldkill).catch(console.log);
     return defered;
   }
 
+  stop(){
+  }
 
   _shift() {
     if(this.forced.length)
@@ -115,13 +123,19 @@ class omxspawn extends Event {
     return defered;
   }
 
-  play(playlist) {
+  play(playlist, shouldkill) {
     this.forced = [];
     if(typeof playlist == "string")
       playlist = [playlist];
     this.playlist = playlist;
 
-    this.emit(START_LOOP_EVENT).catch(console.log);
+
+    if(this.running){
+      this.playlistIndex = 0
+      this.emit(NEXT_EVENT, "reject", shouldkill).catch(console.log);
+    } else {
+      this.emit(START_LOOP_EVENT).catch(console.log);
+    }
 
     var defered = defer();
     this.once('play', defered.resolve);
