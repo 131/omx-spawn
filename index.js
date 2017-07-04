@@ -46,7 +46,7 @@ class omxspawn extends Event {
 
       next = yield this._load(this._shift(), paused);
 
-      var delay = front.duration - (Date.now() - front.startTiming);
+      var delay = front.duration - (Date.now() - front.startTiming) - 90;
       if(!paused)
         delay = 0;
         
