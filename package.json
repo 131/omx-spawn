@@ -1,6 +1,6 @@
 {
   "name": "omx-spawn",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Omxplayer control helper, with continuous playlist support",
   "main": "index.js",
   "scripts": {
