@@ -29,7 +29,15 @@ class omxspawn extends Event {
       return;
     this.running  = true;
 
-    var front = yield this._load(this._shift());
+    var front;
+    try{
+      front = yield this._load(this._shift());
+    }catch(err){
+      debug(err);
+      this.running  = false;
+      return yield this._run();
+    }
+
     var next = {ready : defer()};
 
     var shouldkill = false;
@@ -43,8 +51,12 @@ class omxspawn extends Event {
     var paused = true;
     do {
       front.begin();
-
-      next = yield this._load(this._shift(), paused);
+      try{
+        next = yield this._load(this._shift(), paused);
+      }catch(err){
+        debug(err);
+        continue
+      }
 
       var delay = front.duration - (Date.now() - front.startTiming) - 90;
       if(!paused)
@@ -180,6 +192,7 @@ class omxspawn extends Event {
 
     child.on('close', function(code) {
       debug('child process %s exited with code ', media.guid, code);
+      defered.reject(`child process ${media.guid} exited with code ${code}`);
       media.ready.reject();
     });
 
