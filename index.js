@@ -4,6 +4,8 @@ const Event = require('eventemitter-co');
 const cp    = require('child_process');
 
 const defer = require('nyks/promise/defer');
+const sleep = require('nyks/function/sleep');
+
 const guid  = require('mout/random/guid');
 
 const debug = require('debug')('omx-spawn');
@@ -35,6 +37,7 @@ class omxspawn extends Event {
     }catch(err){
       debug(err);
       this.running  = false;
+      yield sleep(500);
       return yield this._run();
     }
 
@@ -55,6 +58,7 @@ class omxspawn extends Event {
         next = yield this._load(this._shift(), paused);
       }catch(err){
         debug(err);
+        yield sleep(500);
         continue
       }
 
