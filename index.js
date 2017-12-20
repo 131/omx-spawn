@@ -27,14 +27,14 @@ class omxspawn extends Event {
   }
 
   * _run() {
-    if(this.running)  
+    if(this.running)
       return;
     this.running  = true;
 
     var front;
-    try{
+    try {
       front = yield this._load(this._shift());
-    }catch(err){
+    }catch(err) {
       debug(err);
       this.running  = false;
       yield sleep(500);
@@ -46,26 +46,25 @@ class omxspawn extends Event {
     var shouldkill = false;
     var shouldJump = null;
     this.on(NEXT_EVENT, function(reject, killfront) {
-       next.ready[reject]("playonce");
-       shouldkill = !!killfront;
-       shouldJump = reject;
+      next.ready[reject]("playonce");
+      shouldkill = !!killfront;
+      shouldJump = reject;
     });
 
     var paused = true;
     do {
       front.begin();
-      try{
+      try {
         next = yield this._load(this._shift(), paused);
-      }catch(err){
+      }catch(err) {
         debug(err);
         yield sleep(500);
-        continue
+        continue;
       }
 
       var delay = front.duration - (Date.now() - front.startTiming) - 90;
       if(!paused)
         delay = 0;
-        
       setTimeout(next.ready.resolve, delay);
 
       try {
@@ -112,7 +111,7 @@ class omxspawn extends Event {
     return defered;
   }
 
-  stop(){
+  stop() {
   }
 
   _shift() {
@@ -138,7 +137,7 @@ class omxspawn extends Event {
     this.playlist = playlist;
 
     if(this.running) {
-      this.playlistIndex = 0
+      this.playlistIndex = 0;
       this.emit(NEXT_EVENT, "reject", shouldkill).catch(debug);
     } else {
       this.emit(EVENT_LOOP_START).catch(debug);
@@ -153,8 +152,8 @@ class omxspawn extends Event {
     var args = ["--no-osd", "-I", "--layer=" + (this.layer--),  file_path];
 
     return cp.spawn("/usr/bin/omxplayer.bin", args, {
-      env: {
-        LD_LIBRARY_PATH: "/opt/vc/lib:/usr/lib/omxplayer"
+      env : {
+        LD_LIBRARY_PATH : "/opt/vc/lib:/usr/lib/omxplayer"
       }
     });
   }
@@ -176,8 +175,8 @@ class omxspawn extends Event {
         if(this.pause)
           this.togglePause();
         this.startTiming = Date.now();
-        self.emit('track' , this);
-        self.emit('play' , this.file_path);
+        self.emit('track', this);
+        self.emit('play', this.file_path);
       },
 
       destroy : function() {
@@ -213,7 +212,7 @@ class omxspawn extends Event {
         return;
 
       var sp = durationMask.exec(body);
-      var time = (Number(sp[1]) * 3600 + Number(sp[2]) * 60 + Number(sp[3]) + Number(sp[4])/100) * 1000;
+      var time = (Number(sp[1]) * 3600 + Number(sp[2]) * 60 + Number(sp[3]) + Number(sp[4]) / 100) * 1000;
       media.duration = time;
 
       child.stderr.removeListener('data', durationReader);
