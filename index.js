@@ -34,6 +34,7 @@ class omxspawn extends Event {
     var front;
     try {
       front = yield this._load(this._shift());
+      this.front = front;
     }catch(err) {
       debug(err);
       this.running  = false;
@@ -56,6 +57,7 @@ class omxspawn extends Event {
       front.begin();
       try {
         next = yield this._load(this._shift(), paused);
+        this.next = next;
       }catch(err) {
         debug(err);
         yield sleep(500);
@@ -112,6 +114,11 @@ class omxspawn extends Event {
   }
 
   stop() {
+    this.destroy();
+    if(this.front)
+      this.front.destroy();
+    if(this.next)
+      this.next.destroy();
   }
 
   _shift() {
