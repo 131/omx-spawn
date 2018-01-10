@@ -119,6 +119,7 @@ class omxspawn extends Event {
       this.front.destroy();
     if(this.next)
       this.next.destroy();
+    this.once(EVENT_LOOP_START, this._run, this);
   }
 
   _shift() {
