@@ -35,7 +35,7 @@ class omxspawn extends Event {
     try {
       front = yield this._load(this._shift());
       this.front = front;
-    }catch(err) {
+    } catch(err) {
       debug(err);
       this.running  = false;
       yield sleep(500);
@@ -58,7 +58,7 @@ class omxspawn extends Event {
       try {
         next = yield this._load(this._shift(), paused);
         this.next = next;
-      }catch(err) {
+      } catch(err) {
         debug(err);
         yield sleep(500);
         continue;
@@ -171,7 +171,7 @@ class omxspawn extends Event {
     var child = this._spawn(file_path);
 
     var media = {
-      guid : guid().substr(0,6),
+      guid : guid().substr(0, 6),
       pause : false,
       startTiming : null,
       file_path,
@@ -212,7 +212,7 @@ class omxspawn extends Event {
 
 
     var body = "";
-    var durationMask = new RegExp("Duration:\\s+([0-9]{2}):([0-9]{2}):([0-9]{2})\.([0-9]{2})");
+    var durationMask = new RegExp("Duration:\\s+([0-9]{2}):([0-9]{2}):([0-9]{2})\\.([0-9]{2})");
 
     var durationReader = function(data) {
       body += data;

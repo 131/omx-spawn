@@ -4,9 +4,11 @@
   "description": "Omxplayer control helper, with continuous playlist support",
   "main": "index.js",
   "scripts": {
-    "mocha": "node node_modules/mocha/bin/_mocha -r mocha-plugin-co",
-    "test": "node node_modules/istanbul/lib/cli.js cover --report text-summary --report html --report lcov  node_modules/mocha/bin/_mocha -- -r mocha-plugin-co",
-    "coveralls": "npm install coveralls && node ./node_modules/coveralls/bin/coveralls.js < ./coverage/lcov.info"
+    "preversion": "npm run checkall",
+    "eslint": "eslint .",
+    "checkall": "npm run eslint",
+    "mocha": "node node_modules/mocha/bin/_mocha -b",
+    "cover" : "nyc mocha"
   },
   "keywords": [
     "omxplayer",
@@ -16,15 +18,14 @@
   "license": "MIT",
   "dependencies": {
     "debug": "^2.3.2",
-    "eventemitter-co": "^1.0.4",
     "mout": "^1.0.0",
     "nyks": "^3.19.0"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.1.2",
-    "mocha-plugin-co": "^1.0.0"
+    "nyc": "^15.0.1",
+    "eslint-plugin-ivs": "^2.1.2",
+    "mocha": "^3.1.2"
   },
   "repository": {
     "type": "git",
