@@ -8,7 +8,7 @@
     "eslint": "eslint .",
     "checkall": "npm run eslint",
     "mocha": "node node_modules/mocha/bin/_mocha -b",
-    "cover" : "nyc mocha"
+    "cover": "nyc mocha"
   },
   "keywords": [
     "omxplayer",
@@ -18,14 +18,15 @@
   "license": "MIT",
   "dependencies": {
     "debug": "^2.3.2",
+    "eventemitter-async": "^2.1.0",
     "mout": "^1.0.0",
     "nyks": "^3.19.0"
   },
   "devDependencies": {
-    "expect.js": "^0.3.1",
-    "nyc": "^15.0.1",
     "eslint-plugin-ivs": "^2.1.2",
-    "mocha": "^3.1.2"
+    "expect.js": "^0.3.1",
+    "mocha": "^3.1.2",
+    "nyc": "^15.0.1"
   },
   "repository": {
     "type": "git",

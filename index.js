@@ -1,7 +1,7 @@
 "use strict";
 
-const Event = require('eventemitter-co');
-const cp    = require('child_process');
+const Events = require('eventemitter-async');
+const cp     = require('child_process');
 
 const defer = require('nyks/promise/defer');
 const sleep = require('nyks/function/sleep');
@@ -14,7 +14,8 @@ const NEXT_EVENT       = guid(); //private
 const EVENT_LOOP_START = guid(); //private
 const EVENT_LOOP_END   = guid(); //private
 
-class omxspawn extends Event {
+
+class omxspawn extends Events {
 
   constructor() {
     super();
@@ -26,41 +27,41 @@ class omxspawn extends Event {
     this.once(EVENT_LOOP_START, this._run, this);
   }
 
-  * _run() {
+  async _run() {
     if(this.running)
       return;
     this.running  = true;
 
     var front;
     try {
-      front = yield this._load(this._shift());
-      this.front = front;
+      front = await this._load(this._shift());
+      this._front = front;
     } catch(err) {
-      debug(err);
+
       this.running  = false;
-      yield sleep(500);
-      return yield this._run();
+      await sleep(500);
+      return await this._run();
     }
 
     var next = {ready : defer()};
 
     var shouldkill = false;
     var shouldJump = null;
-    this.on(NEXT_EVENT, function(reject, killfront) {
-      next.ready[reject]("playonce");
+    this.on(NEXT_EVENT, function(rejectOrResolve, killfront) {
+      next.ready[rejectOrResolve]("playonce");
       shouldkill = !!killfront;
-      shouldJump = reject;
+      shouldJump = rejectOrResolve;
     });
 
     var paused = true;
     do {
       front.begin();
       try {
-        next = yield this._load(this._shift(), paused);
-        this.next = next;
+        next = await this._load(this._shift(), paused);
+        this._next = next;
       } catch(err) {
         debug(err);
-        yield sleep(500);
+        await sleep(500);
         continue;
       }
 
@@ -72,7 +73,7 @@ class omxspawn extends Event {
       try {
         if(shouldJump)
           next.ready[shouldJump]("playonce");
-        yield next.ready;
+        await next.ready;
       } catch(err) {
         if(err == "playonce") {
           if(shouldkill)
@@ -114,12 +115,13 @@ class omxspawn extends Event {
   }
 
   stop() {
-    this.destroy();
-    if(this.front)
-      this.front.destroy();
-    if(this.next)
-      this.next.destroy();
+    let stopped = this.destroy();
+    if(this._front)
+      this._front.destroy();
+    if(this._next)
+      this._next.destroy();
     this.once(EVENT_LOOP_START, this._run, this);
+    return stopped;
   }
 
   _shift() {
@@ -202,8 +204,8 @@ class omxspawn extends Event {
     var defered = defer();
 
     child.on('close', function(code) {
-      debug('child process %s exited with code ', media.guid, code);
       defered.reject(`child process ${media.guid} exited with code ${code}`);
+      media.ready.catch(() => {});
       media.ready.reject();
     });
 
@@ -211,7 +213,7 @@ class omxspawn extends Event {
       media.togglePause();
 
 
-    var body = "";
+    var body = "";// Duration: 00:01:01.07
     var durationMask = new RegExp("Duration:\\s+([0-9]{2}):([0-9]{2}):([0-9]{2})\\.([0-9]{2})");
 
     var durationReader = function(data) {

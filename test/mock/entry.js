@@ -8,13 +8,12 @@ process.stdin.on('data', function(line) {
   line = ("" + line).trim();
 
   if(line == "p") {
-    if(!paused) {
+    if(!paused)
       clearTimeout(destroy);
-      paused = true;
-    } else {
+    else
       destroy = setTimeout(process.exit, duration);
-      paused = false;
-    }
+
+    paused = !paused;
   }
 
 });
@@ -25,7 +24,8 @@ var z2 = function(a) {
 
 var time = new Date(duration);
 
-var str = [z2(time.getUTCHours()), z2(time.getUTCMinutes()), z2(time.getUTCSeconds()), z2(time.getUTCMilliseconds() / 10, 2)].join(':');
+// Duration: 00:01:01.07
+var str = [z2(time.getUTCHours()), ":", z2(time.getUTCMinutes()), ":", z2(time.getUTCSeconds()), ".", z2(time.getUTCMilliseconds() / 10, 2)].join('');
 
 console.error("Duration: ", str);
 destroy = setTimeout(process.exit, duration);

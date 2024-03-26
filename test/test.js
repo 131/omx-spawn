@@ -7,60 +7,57 @@ const sleep = require('nyks/function/sleep');
 
 //check deviation
 const dev = function(player, target, deviance) {
-  var history = player.history.map(line => Math.floor(line.duration / 100));
+  var history = player.history.map(line => line.duration);
   console.log("Checking", history, "against", target, "accepting", deviance);
 
-  history.map(function(val, i) {
-    expect(target[i] - val).to.be.within(-deviance[i], deviance[i]);
-  });
+  for(let step = 0; step < target.length; step++)
+    expect(target[step] - history[step]).to.be.within(-deviance[step], deviance[step]);
 };
 
 describe("Mock player test", function() {
   this.timeout(20 * 1000);
 
-  it("should test playlist", function * () {
+  it("should test playlist", async () => {
 
     var player = new Player();
 
 
     player.play(["1000", "1300"]);
-    yield sleep(8 * 1000);
-
-    yield player.destroy();
-
-    dev(player, [10, 13, 10, 13, 10, 13], [0, 0, 0, 0, 0, 0]);
+    await sleep(8 * 1000);
+    await player.destroy();
+    dev(player, [1000, 1300, 1000, 1300, 1000, 1300], [100, 100, 100, 100, 100, 100]);
   });
 
-  it("should test playlist & next", function * () {
+  it("should test playlist & next", async () => {
     var player = new Player();
 
-    yield player.play(["2000", "1000"]);
+    await player.play(["2000", "1000"]);
 
-    yield sleep(1000); yield player.next();
-    yield sleep(3500); yield player.next();
-    yield sleep(1000);  yield player.next();
+    await sleep(1000); await player.next();
+    await sleep(3500); await player.next();
+    await sleep(1000);  await player.next();
 
-    yield player.destroy();
+    await player.destroy();
 
-    dev(player, [10, 10, 20, 5, 10], [0, 0, 0, 0, 0]);
+    dev(player, [1000, 1000, 2000, 500, 1000], [100, 100, 100, 250, 100]);
   });
 
 
-  it("should test playonce", function *() {
+  it("should test playonce", async () => {
     var player = new Player();
 
 
-    yield player.play(["2000"]);
-    yield sleep(1000);
+    await player.play(["2000"]);
+    await sleep(1000);
 
     player.playonce("3000");
-    yield sleep(1000);
-    yield player.playonce("3000");
+    await sleep(1000);
+    await player.playonce("3000");
 
-    yield sleep(6 * 1000);
-    yield player.destroy();
+    await sleep(6 * 1000);
+    await player.destroy();
 
-    dev(player, [15, 10, 30, 20], [5, 1, 0, 0]);
+    dev(player, [1500, 1000, 3000, 2000], [500, 100, 100, 100]);
   });
 
 });
