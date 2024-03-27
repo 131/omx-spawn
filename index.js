@@ -161,11 +161,7 @@ class omxspawn extends Events {
   _spawn(file_path) {
     var args = ["--no-osd", "-I", "--layer=" + (this.layer--),  file_path];
 
-    return cp.spawn("/usr/bin/omxplayer.bin", args, {
-      env : {
-        LD_LIBRARY_PATH : "/opt/vc/lib:/usr/lib/omxplayer"
-      }
-    });
+    return cp.spawn("omxplayer.bin", args);
   }
 
   _load(file_path, paused) {
