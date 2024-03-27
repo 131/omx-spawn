@@ -107,7 +107,7 @@ class omxspawn extends Events {
   }
 
   playonce(file, shouldkill) {
-    this.forced = [file];
+    this.forced = Array.isArray(file) ? file : [file];
     var defered = defer();
     this.once('play', defered.resolve);
     this.emit(NEXT_EVENT, "reject", shouldkill).catch(debug);
